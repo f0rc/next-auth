@@ -20,7 +20,7 @@ import { MySqlDatabase, MySqlTableFn } from "drizzle-orm/mysql-core"
 import { PgDatabase, PgTableFn } from "drizzle-orm/pg-core"
 import { BaseSQLiteDatabase, SQLiteTableFn } from "drizzle-orm/sqlite-core"
 import { mySqlDrizzleAdapter } from "./lib/mysql.js"
-import { pgDrizzleAdapter } from "./lib/pg.js"
+import { DefaultSchema, pgDrizzleAdapter } from "./lib/pg.js"
 import { SQLiteDrizzleAdapter } from "./lib/sqlite.js"
 import { SqlFlavorOptions, TableFn } from "./lib/utils.js"
 import { is } from "drizzle-orm"
@@ -98,7 +98,7 @@ import type { Adapter } from "@auth/core/adapters"
  *   session_state: text("session_state"),
  * },
  * (account) => ({
- *   compoundKey: primaryKey({ columns: [account.provider, account.providerAccountId] }),
+ *   compoundKey: primaryKey(account.provider, account.providerAccountId),
  * })
  * )
  *
@@ -118,7 +118,7 @@ import type { Adapter } from "@auth/core/adapters"
  *    expires: timestamp("expires", { mode: "date" }).notNull(),
  *  },
  *  (vt) => ({
- *    compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
+ *    compoundKey: primaryKey(vt.identifier, vt.token),
  *  })
  * )
  * ```
@@ -161,9 +161,7 @@ import type { Adapter } from "@auth/core/adapters"
  *   session_state: varchar("session_state", { length: 255 }),
  * },
  * (account) => ({
- *    compoundKey: primaryKey({
-        columns: [account.provider, account.providerAccountId],
-      }),
+ *   compoundKey: primaryKey(account.provider, account.providerAccountId),
  * })
  * )
  *
@@ -183,7 +181,7 @@ import type { Adapter } from "@auth/core/adapters"
  *   expires: timestamp("expires", { mode: "date" }).notNull(),
  * },
  * (vt) => ({
- *   compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
+ *   compoundKey: primaryKey(vt.identifier, vt.token),
  * })
  * )
  * ```
@@ -220,9 +218,7 @@ import type { Adapter } from "@auth/core/adapters"
  *    session_state: text("session_state"),
  *  },
  *  (account) => ({
- *    compoundKey: primaryKey({
-        columns: [account.provider, account.providerAccountId],
-      }),
+ *    compoundKey: primaryKey(account.provider, account.providerAccountId),
  *  })
  * )
  *
@@ -242,7 +238,7 @@ import type { Adapter } from "@auth/core/adapters"
  *   expires: integer("expires", { mode: "timestamp_ms" }).notNull(),
  * },
  * (vt) => ({
- *   compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
+ *   compoundKey: primaryKey(vt.identifier, vt.token),
  * })
  * )
  * ```
@@ -257,12 +253,14 @@ import type { Adapter } from "@auth/core/adapters"
  **/
 export function DrizzleAdapter<SqlFlavor extends SqlFlavorOptions>(
   db: SqlFlavor,
+  tables: DefaultSchema,
   table?: TableFn<SqlFlavor>
 ): Adapter {
+  console.log("DrizzleAdapter", db, table)
   if (is(db, MySqlDatabase)) {
     return mySqlDrizzleAdapter(db, table as MySqlTableFn)
   } else if (is(db, PgDatabase)) {
-    return pgDrizzleAdapter(db, table as PgTableFn)
+    return pgDrizzleAdapter(db, table as PgTableFn, tables)
   } else if (is(db, BaseSQLiteDatabase)) {
     return SQLiteDrizzleAdapter(db, table as SQLiteTableFn)
   }
