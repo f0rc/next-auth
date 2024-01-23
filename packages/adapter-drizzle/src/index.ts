@@ -256,7 +256,6 @@ export function DrizzleAdapter<SqlFlavor extends SqlFlavorOptions>(
   tables: DefaultSchema,
   table?: TableFn<SqlFlavor>
 ): Adapter {
-  console.log("DrizzleAdapter", db, table)
   if (is(db, MySqlDatabase)) {
     return mySqlDrizzleAdapter(db, table as MySqlTableFn)
   } else if (is(db, PgDatabase)) {
